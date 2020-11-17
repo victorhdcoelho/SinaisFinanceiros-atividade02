@@ -126,6 +126,49 @@ from tqdm import tqdm
 #        self.get_amount(capital, pesos)
 #        self.report_active_long_short_result()
 
+def get_ema_cols(df, short, long):
+    short = df.ewm(ignore_na=False, min_periods=short, com=short, adjust=True).mean()
+    long = df.ewm(ignore_na=False, min_periods=long, com=long, adjust=True).mean()
+    return short, long
+
+def get_macd(df, signal):
+    macd = df["short"] - df["long"]
+    macd_signal= macd.ewm(ignore_na=False, min_periods=0, com=signal, adjust=True).mean()
+    return macd, macd_signal
+
+def get_montante(df, capital):
+    montante = []
+    montante.append(capital)
+    for each in df["return"][1:]:
+        capital = capital * (1 + each)
+        montante.append(capital)
+    return montante
+
+def get_return_info(df, ativo, capital):
+    temp_df = df[df["position"] != 0]
+    temp_df["return"] = temp_df[ativo].diff() /100
+    temp_df["montante"] = get_montante(temp_df, capital)
+    acertos_compra = temp_df[(temp_df["position"] == 1.0) & (temp_df["return"] <= 0)].shape[0]
+    acertos_venda = temp_df[(temp_df["position"] == -1.0) & (temp_df["return"] > 0)].shape[0]
+    result = (temp_df["montante"].tail(1)[0] - temp_df["montante"].head(1)[0]) - (10 * temp_df.shape[0])
+    print("ATIVO: {} RETORNO: {} ACERTO BUY: {} ACERTO SELL: {} TOTAL TRADES: {} PERC_ACERTO: {}".format(
+        ativo, round(result, 2), acertos_compra, acertos_venda, temp_df.shape[0],
+        ((acertos_compra + acertos_venda)/temp_df.shape[0])*100))
+    accs = acertos_compra + acertos_venda
+    trades = temp_df.shape[0]
+    return result, accs, trades
+
+def get_info_invest(df, capital, posi):
+    total = 0
+    total_acc = 0
+    total_trades = 0
+    for each, pos in zip(df.keys(), posi):
+        parte = capital * pos
+        result, accs, trades = get_return_info(df[each], each, parte)
+        total += result
+        total_acc += accs
+        total_trades += trades
+    print("Total de lucro da carteira: {}\nMédia de acerto: {}%".format(round(total, 2), round((total_acc/total_trades)*100, 2)))
 
 def long_short_invest(df, window_s, window_l, capital,
                       peso=[0.08, 0.39, 0.05, 0.35, 0.12]):

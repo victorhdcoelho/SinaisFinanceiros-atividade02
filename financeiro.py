@@ -31,15 +31,16 @@ class AIFinancial:
 
     def kmeans_cluster(self, num):
         retornos = 100 * self.df[self.df.columns].pct_change()
-        test_col = [
-            each for each in self.df.columns if each in self.df_test.columns]
-        retornos_test = self.df_test[test_col].pct_change()
+        # test_col = [
+        #     each for each in self.df.columns if each in self.df_test.columns]
+        # retornos_test = self.df_test[test_col].pct_change()
         stocks = retornos.columns
         X = np.array([[np.std(retornos[sto]),
-                           np.mean(retornos[sto])] for sto in stocks])
-        X_test = np.array([[np.std(retornos_test[sto]),
-                                  np.mean(retornos_test[sto])]
-                                 for sto in test_col])
+                       np.mean(retornos[sto])] for sto in stocks])
+
+        # X_test = np.array([[np.std(retornos_test[sto]),
+        #                     np.mean(retornos_test[sto])]
+        #                    for sto in test_col])
         N = num
         kmeans = KMeans(n_clusters=N, random_state=0).fit(X)
         y_kmeans = kmeans.predict(X)
@@ -200,3 +201,10 @@ class FinancialData:
         best, maxx = self.get_max_sharpe(dict_sharpe, list_best)
         result = (index, (best, maxx))
         return result
+
+    def split_data_by_name(self, df):
+        split_data = {}
+        for active in df.columns:
+            split_data[active] = df[[active]]
+
+        return split_data
