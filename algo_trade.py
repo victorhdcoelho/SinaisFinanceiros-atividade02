@@ -34,18 +34,6 @@ def get_return_info(df, ativo, capital):
     trades = temp_df.shape[0]
     return result, accs, trades
 
-def get_new_invest(df, posi, capital):
-    total = 0
-    total_acc = 0
-    total_trades = 0
-    for each, pos in zip(df.keys(), posi):
-        parte = capital * pos
-        result, accs, trades = get_return_info(df[each], each, parte)
-        total += result
-        total_acc += accs
-        total_trades += trades
-    print("Total de lucro da carteira: {}\nMédia de acerto: {}%".format(round(total, 2), round((total_acc/total_trades)*100, 2)))
-
 def get_returns_info_new(temp_df, ativo):
     acertos_compra = temp_df[(temp_df["position"] == 1.0) & (temp_df["return"] <= 0)].shape[0]
     acertos_venda = temp_df[(temp_df["position"] == -1.0) & (temp_df["return"] > 0)].shape[0]
@@ -56,6 +44,18 @@ def get_returns_info_new(temp_df, ativo):
     accs = acertos_compra + acertos_venda
     trades = temp_df.shape[0]
     return result, accs, trades
+
+def get_new_invest(df, posi, capital):
+    total = 0
+    total_acc = 0
+    total_trades = 0
+    for each, pos in zip(df.keys(), posi):
+        parte = capital * pos
+        result, accs, trades = get_returns_info_new(df[each], each)
+        total += result
+        total_acc += accs
+        total_trades += trades
+    print("Total de lucro da carteira: {}\nMédia de acerto: {}%".format(round(total, 2), round((total_acc/total_trades)*100, 2)))
 
 def get_info_invest(df, capital, posi):
     total = 0
