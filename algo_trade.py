@@ -1,130 +1,6 @@
 import pandas as pd
 from tqdm import tqdm
-# import matplotlib.pyplot as plt
 
-
-# class CrossOverInvest:
-#    def __init__(self, df, windown_s, windown_l):
-#        self.df = df
-#        self.windown_s = windown_s
-#        self.windown_l = windown_l
-#        self.short = None
-#        self.long = None
-#        self.long_short = None
-#        self.long_short_diff = None
-#        self.all_long_short = {}
-#
-#    def create_long_short(self):
-#        self.short = self.df.rolling(
-#            window=self.windown_s).mean()[self.windown_l:]
-#
-#        self.long = self.df.rolling(
-#            window=self.windown_l).mean()[self.windown_l:]
-#        self.short = self.short.dropna()
-#        self.long = self.long.dropna()
-#
-#    def plot_long_short(self):
-#        for each in self.df.columns:
-#            ativo = each
-#            _ = plt.subplots(figsize=(20, 12))
-#            plt.style.use('seaborn-whitegrid')
-#            plt.plot(self.short.index, self.short[ativo],
-#                     color='green', label='Short')
-#            plt.plot(self.long.index, self.long[ativo],
-#                     color='b', label='Long')
-#            plt.title("Médias {}".format(each))
-#            plt.legend(loc='upper left', fontsize=20)
-#            plt.show()
-#
-#    def create_empty_long_short_list(self):
-#        long_short = {}
-#        for each in self.short.columns:
-#            long_short[each] = [0 for i in range(self.short.shape[0])]
-#        long_short = pd.DataFrame(data=long_short)
-#        self.long_short = long_short
-#
-#    def compare_long_short(self):
-#        for each in tqdm(self.short.columns):
-#            for i in range(self.short.shape[0]):
-#                if self.short[each].iloc[i] > self.long[each].iloc[i]:
-#                    self.long_short[each].loc[i] = 1
-#                else:
-#                    self.long_short[each].loc[i] = 0
-#        self.long_short.index = self.short.index
-#        self.long_short_diff = self.long_short.diff()
-#
-#    def plot_buy_sell_long_short(self):
-#        for each in self.df.columns:
-#            ativo = each
-#            _ = plt.subplots(figsize=(20, 15))
-#            plt.style.use('seaborn-whitegrid')
-#            plt.plot(self.short[ativo], label='Short')
-#            plt.plot(self.long[ativo], label='Long')
-#            plt.ylabel("Preço [R$]", fontsize=25)
-#            plt.xlabel("Data", fontsize=25)
-#            plt.title("Médias {}".format(each), fontsize=25)
-#            plt.plot(self.short[ativo][
-#                self.long_short_diff[ativo] == 1.0].index,
-#                    self.short[ativo][self.long_short_diff[ativo] == 1.0],
-#                    '^', markersize=10, color='m', label='Buy')
-#            plt.plot(self.short[ativo][
-#                self.long_short_diff[ativo] == -1.0].index,
-#                    self.short[ativo][self.long_short_diff[ativo] == -1.0],
-#                    'v', markersize=10, color='k', label='Sell')
-#            plt.legend(loc='upper left', fontsize=25)
-#            plt.show()
-#
-#    def set_action_long_short(self):
-#        for ativo in tqdm(self.df.columns):
-#            self.long_short_diff[ativo].loc[
-#                self.long_short_diff[ativo] == 1.0] = "buy"
-#            self.long_short_diff[ativo].loc[
-#                self.long_short_diff[ativo] == -1.0] = "sell"
-#        self.long_short_diff = self.long_short_diff.dropna()
-#
-#    def get_all_long_short_info(self):
-#        for each in self.df.columns:
-#            ativo_df = self.long_short_diff[
-#                [each]][self.long_short_diff[each] != 0]
-#            ativo_df = ativo_df.rename(columns={each: "action"})
-#            ativo_df["close"] = self.df[each][self.df[each].index.isin(
-#                ativo_df.index)]
-#            ativo_df["return"] = ativo_df["close"].diff()/100
-#            self.all_long_short[each] = ativo_df
-#
-#    def get_amount(self, capital, pesos=[0.08, 0.39, 0.05, 0.35, 0.12]):
-#        print(capital)
-#        for each, p in tqdm(zip(self.df.columns, pesos)):
-#            capital = capital * p
-#            print(capital)
-#            montante = []
-#            montante.append(capital)
-#            for re in self.all_long_short[each]["return"][1:]:
-#                capital = capital * (1 + re)
-#                montante.append(capital)
-#            self.all_long_short[each]["montante"] = montante
-#
-#    def report_active_long_short_result(self):
-#        total = 0
-#        for each in self.all_long_short.keys():
-#            initial = self.all_long_short[each].head(1)["montante"][0]
-#            final = initial = self.all_long_short[each].tail(1)["montante"][0]
-#            taxa = (10 * self.all_long_short[each].shape[0])
-#            result = (final-initial)-taxa
-#            total += result
-#            print("{}: {}".format(each, round(result, 2)))
-#        print("Total de lucro da carteira: {}".format(round(total, 2)))
-#
-#    def run(self, capital, pesos=[0.08, 0.39, 0.05, 0.35, 0.12]):
-#        self.create_long_short()
-#        # self.plot_long_short()
-#        self.create_empty_long_short_list()
-#        self.compare_long_short()
-#        # self.plot_buy_sell_long_short()
-#        self.set_action_long_short()
-#        self.get_all_long_short_info()
-#        self.get_amount(capital, pesos)
-#        self.report_active_long_short_result()
 
 def get_ema_cols(df, short, long):
     short = df.ewm(ignore_na=False, min_periods=short, com=short, adjust=True).mean()
@@ -148,6 +24,29 @@ def get_return_info(df, ativo, capital):
     temp_df = df[df["position"] != 0]
     temp_df["return"] = temp_df[ativo].diff() /100
     temp_df["montante"] = get_montante(temp_df, capital)
+    acertos_compra = temp_df[(temp_df["position"] == 1.0) & (temp_df["return"] <= 0)].shape[0]
+    acertos_venda = temp_df[(temp_df["position"] == -1.0) & (temp_df["return"] > 0)].shape[0]
+    result = (temp_df["montante"].tail(1)[0] - temp_df["montante"].head(1)[0]) - (10 * temp_df.shape[0])
+    print("ATIVO: {} RETORNO: {} ACERTO BUY: {} ACERTO SELL: {} TOTAL TRADES: {} PERC_ACERTO: {}".format(
+        ativo, round(result, 2), acertos_compra, acertos_venda, temp_df.shape[0],
+        ((acertos_compra + acertos_venda)/temp_df.shape[0])*100))
+    accs = acertos_compra + acertos_venda
+    trades = temp_df.shape[0]
+    return result, accs, trades
+
+def get_new_invest(df, posi, capital):
+    total = 0
+    total_acc = 0
+    total_trades = 0
+    for each, pos in zip(df.keys(), posi):
+        parte = capital * pos
+        result, accs, trades = get_return_info(df[each], each, parte)
+        total += result
+        total_acc += accs
+        total_trades += trades
+    print("Total de lucro da carteira: {}\nMédia de acerto: {}%".format(round(total, 2), round((total_acc/total_trades)*100, 2)))
+
+def get_returns_info_new(temp_df, ativo):
     acertos_compra = temp_df[(temp_df["position"] == 1.0) & (temp_df["return"] <= 0)].shape[0]
     acertos_venda = temp_df[(temp_df["position"] == -1.0) & (temp_df["return"] > 0)].shape[0]
     result = (temp_df["montante"].tail(1)[0] - temp_df["montante"].head(1)[0]) - (10 * temp_df.shape[0])
